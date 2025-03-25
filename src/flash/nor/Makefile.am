@@ -47,6 +47,7 @@ NOR_DRIVERS = \
 	%D%/mdr.c \
 	%D%/msp432.c \
 	%D%/mrvlqspi.c \
+	%D%/nct_esio.c \
 	%D%/niietcm4.c \
 	%D%/non_cfi.c \
 	%D%/npcx.c \
@@ -99,4 +100,5 @@ NORHEADERS = \
 	%D%/spi.h \
 	%D%/stm32l4x.h \
 	%D%/stmqspi.h \
-	%D%/msp432.h
+	%D%/msp432.h \
+	%D%/nct_esio.h
