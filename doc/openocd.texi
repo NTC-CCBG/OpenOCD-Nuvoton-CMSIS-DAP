@@ -7023,6 +7023,32 @@ msp432 bsl lock
 @end deffn
 @end deffn
 
+@deffn {Flash Driver} {nct_esio}
+All versions of the eSIO microcontroller families from Nuvoton include internal
+flash and external. The NCT_eSIO flash driver supports the eSIO family of devices.
+The driver automatically recognizes the specific version's flash parameters and
+autoconfigures itself.
+
+The flash contained in the eSIO chip is as follows:
+@itemize @bullet
+@item Internal Flash - this is the main flash for eSIO. Total size varies among
+devices(512 KBytes, 1 MBytes and 2M Bytes), sector size: 4 kBytes.
+@item Private Flash - this is optional external flash. (Maximum size: 256 Mbytes)
+@item Shared Flash - this is optional external flash. (Maximum size: 256 Mbytes)
+@item Backup Flash - this is optional external flash. (Maximum size: 256 Mbytes)
+@end itemize
+
+All four flash regions are supported by the driver. Flash Density is detected
+automatically by parsing data in SFDP.
+
+@example
+flash bank $_FLASHNAME nct_esio 0x00080000 0 0 0 $_TARGETNAME
+flash bank $_FLASHNAME nct_esio 0x60000000 0 0 0 $_TARGETNAME
+flash bank $_FLASHNAME nct_esio 0x70000000 0 0 0 $_TARGETNAME
+flash bank $_FLASHNAME nct_esio 0x80000000 0 0 0 $_TARGETNAME
+@end example
+@end deffn
+
 @deffn {Flash Driver} {niietcm4}
 This drivers handles the integrated NOR flash on NIIET Cortex-M4
 based controllers. Flash size and sector layout are auto-configured by the driver.
