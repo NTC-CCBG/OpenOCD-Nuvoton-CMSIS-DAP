@@ -4,10 +4,10 @@
 MEMORY {
 	/* buffer + parameters */
 	BUFFER (RWX)  : ORIGIN = 0x200C0000,
-					LENGTH = 0x1000 + 20
+			LENGTH = 0x1000 + 20
 
 	PROGRAM (RWX)  : ORIGIN = 0x200C1014,
-					 LENGTH = 0x1000
+			 LENGTH = 0x1000
 }
 
 /* Sections used for flashing */

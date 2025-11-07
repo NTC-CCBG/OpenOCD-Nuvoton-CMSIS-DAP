@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include "nct_esio_flash.h"
+#include "nct6694d_flash.h"
 
 /* flashloader parameter structure */
 __attribute__ ((section(".buffers.g_cfg")))
@@ -20,14 +20,14 @@ static void delay(uint32_t i)
 
 static void gdma_memcpy_u8(uint8_t* dst, uint8_t* src, uint32_t cpylen)
 {
-    if(cpylen == 0) return;
+	if (cpylen == 0) return;
 
 	GDMA_SRCB0 = (uint32_t)src;
 	GDMA_DSTB0 = (uint32_t)dst;
 	GDMA_TCNT0 = cpylen;
 	GDMA_CTL0 = 0x10001;
 
-	while(GDMA_CTL0 & 0x1);
+	while (GDMA_CTL0 & 0x1);
 	GDMA_CTL0 = 0;
 }
 
@@ -35,20 +35,18 @@ static void gdma_memcpy_burst_u32(uint8_t* dst, uint8_t* src, uint32_t cpylen)
 {
 	uint32_t rlen;
 
-    if(cpylen == 0) return;
+	if (cpylen == 0) return;
 
-    /* src and dst address must 16byte aligned */
-    if(((uint32_t)src & 0x0F) || ((uint32_t)dst & 0xF))
-    {
-        gdma_memcpy_u8(dst, src, cpylen);
-        return;
-    }
+	/* src and dst address must 16byte aligned */
+	if (((uint32_t)src & 0x0F) || ((uint32_t)dst & 0xF)) {
+		gdma_memcpy_u8(dst, src, cpylen);
+		return;
+	}
 
-    /* aligned 64Byte length */
+	/* aligned 64Byte length */
 	rlen = cpylen & 0xFFFFFFC0;
-	if(rlen)
-	{
-	    FIU0->BURST_CFG = 0x0B;
+	if (rlen) {
+		FIU0->BURST_CFG = 0x0B;
 
 		GDMA_SRCB0 = (uint32_t)src;
 		GDMA_DSTB0 = (uint32_t)dst;
@@ -66,25 +64,21 @@ static void gdma_memcpy_burst_u32(uint8_t* dst, uint8_t* src, uint32_t cpylen)
 	}
 
 	/* remain length */
-	if(cpylen)
-	{
+	if(cpylen) {
 		gdma_memcpy_u8(dst, src, cpylen);
 	}
 }
 
 static uint8_t fiu_read(enum flash_port port, uint32_t addr, uint8_t* buff, uint32_t len, uint8_t adr_4b)
 {
-    FIU_Quad_Mode_Disable;
-    if (adr_4b)
-    {
-        FIU_Set_4B_CMD_EN(port, FLASH_CMD_4BYTE_READ);
-    }
-    else
-    {
-        FIU_Clr_4B_CMD_EN(port);
-    }
-    FIU0->SPI_FL_CFG = (0 << FIU_SPI_FL_CFG_RD_MODE_Pos) & FIU_SPI_FL_CFG_RD_MODE_Msk;
-    gdma_memcpy_burst_u32(buff, (uint8_t*)((addr & 0x1FFFFFFF) + BASE_FIU(port)), len);
+	FIU_Quad_Mode_Disable;
+	if (adr_4b) {
+	FIU_Set_4B_CMD_EN(port, FLASH_CMD_4BYTE_READ);
+	} else {
+	FIU_Clr_4B_CMD_EN(port);
+	}
+	FIU0->SPI_FL_CFG = (0 << FIU_SPI_FL_CFG_RD_MODE_Pos) & FIU_SPI_FL_CFG_RD_MODE_Msk;
+	gdma_memcpy_burst_u32(buff, (uint8_t*)((addr & 0x1FFFFFFF) + BASE_FIU(port)), len);
 
 	return 0;
 }
@@ -176,9 +170,9 @@ static uint8_t fiu_program(enum flash_port port, uint32_t addr, uint8_t *buff, u
 		/* write address 3B */
 		FIU0->MSR_IE_CFG |= FIU_MSR_IE_CGF_UMA_BLOCK_Msk;
 		FIU0->UMA_ECTS = ((adr_4b) ? ( 4 << FIU_UMA_ECTS_UMA_ADDR_SIZE_Pos) : (3 << FIU_UMA_ECTS_UMA_ADDR_SIZE_Pos)) |
-						 ((port == FLASH_PORT_PVT) ? (FIU_UMA_ECTS_SW_CS1_Msk | FIU_UMA_ECTS_SW_CS2_Msk) : \
-						 ((port == FLASH_PORT_BKP) ? (FIU_UMA_ECTS_DEV_NUM_BKP_Msk | FIU_UMA_ECTS_SW_CS0_Msk | FIU_UMA_ECTS_SW_CS1_Msk) : \
-													 (FIU_UMA_ECTS_SW_CS0_Msk | FIU_UMA_ECTS_SW_CS2_Msk)));
+				 ((port == FLASH_PORT_PVT) ? (FIU_UMA_ECTS_SW_CS1_Msk | FIU_UMA_ECTS_SW_CS2_Msk) : \
+				 ((port == FLASH_PORT_BKP) ? (FIU_UMA_ECTS_DEV_NUM_BKP_Msk | FIU_UMA_ECTS_SW_CS0_Msk | FIU_UMA_ECTS_SW_CS1_Msk) : \
+				 (FIU_UMA_ECTS_SW_CS0_Msk | FIU_UMA_ECTS_SW_CS2_Msk)));
 		FIU0->UMA_AB0_3 = addr;
 		FIU0->UMA_CODE = (adr_4b) ? (FLASH_CMD_4BYTE_PROGRAM) : (FLASH_CMD_PAGE_PROGRAM);
 
@@ -269,8 +263,8 @@ static uint32_t halspi_rw(enum flash_port port, uint8_t *wr_buf, uint16_t wr_siz
 	if((rd_size > 4) || (wr_size >= 5)) {
 		/* Read or write data, CS is manual control. */
 		FIU0->UMA_ECTS = (port == FLASH_PORT_PVT) ? (FIU_UMA_ECTS_SW_CS1_Msk | FIU_UMA_ECTS_SW_CS2_Msk) :
-						 (port == FLASH_PORT_SHD) ? (FIU_UMA_ECTS_SW_CS0_Msk | FIU_UMA_ECTS_SW_CS2_Msk) :
-						 (port == FLASH_PORT_BKP) ? (FIU_UMA_ECTS_SW_CS0_Msk | FIU_UMA_ECTS_SW_CS1_Msk) : 0;
+				 (port == FLASH_PORT_SHD) ? (FIU_UMA_ECTS_SW_CS0_Msk | FIU_UMA_ECTS_SW_CS2_Msk) :
+				 (port == FLASH_PORT_BKP) ? (FIU_UMA_ECTS_SW_CS0_Msk | FIU_UMA_ECTS_SW_CS1_Msk) : 0;
 		FIU0->MSR_IE_CFG |= FIU_MSR_IE_CGF_UMA_BLOCK_Msk;
 		cs_auto = 0;
 	} else {
@@ -294,17 +288,17 @@ static uint32_t halspi_rw(enum flash_port port, uint8_t *wr_buf, uint16_t wr_siz
 		if(cs_auto == 0) {
 			/* read or write data */
 			FIU0->UMA_CTS = (FIU_UMA_CTS_EXEC_DONE_Msk | \
-							 ((port == FLASH_PORT_PVT) ? (FIU_UMA_CTS_DEV_PRI_MSK) : (FIU_UMA_CTS_DEV_SHR_MSK)) | \
-							 FIU_UMA_CTS_A_SIZE_Msk);
+					 ((port == FLASH_PORT_PVT) ? (FIU_UMA_CTS_DEV_PRI_MSK) : (FIU_UMA_CTS_DEV_SHR_MSK)) | \
+					 FIU_UMA_CTS_A_SIZE_Msk);
 
 			while(FIU0->UMA_CTS & FIU_UMA_CTS_EXEC_DONE_Msk);
 		} else {
 			/* erase command */
 			if((wr_size == 0) && (rd_size == 0)) {
 				FIU0->UMA_CTS = (FIU_UMA_CTS_EXEC_DONE_Msk | \
-								 FIU_UMA_CTS_RD_WR_Msk | \
-								 ((port == FLASH_PORT_PVT) ? (FIU_UMA_CTS_DEV_PRI_MSK) : (FIU_UMA_CTS_DEV_SHR_MSK)) | \
-								 FIU_UMA_CTS_A_SIZE_Msk);
+						 FIU_UMA_CTS_RD_WR_Msk | \
+						 ((port == FLASH_PORT_PVT) ? (FIU_UMA_CTS_DEV_PRI_MSK) : (FIU_UMA_CTS_DEV_SHR_MSK)) | \
+						 FIU_UMA_CTS_A_SIZE_Msk);
 
 				while(FIU0->UMA_CTS & FIU_UMA_CTS_EXEC_DONE_Msk);
 			}
@@ -339,9 +333,9 @@ static uint32_t halspi_rw(enum flash_port port, uint8_t *wr_buf, uint16_t wr_siz
 
 			/* Read per 4 byte */
 			FIU0->UMA_CTS = (FIU_UMA_CTS_EXEC_DONE_Msk | \
-							 FIU_UMA_CTS_RD_WR_Msk | \
-							 ((port == FLASH_PORT_PVT) ? (FIU_UMA_CTS_DEV_PRI_MSK) : (FIU_UMA_CTS_DEV_SHR_MSK)) | \
-							 (len - 1));
+					 FIU_UMA_CTS_RD_WR_Msk | \
+					 ((port == FLASH_PORT_PVT) ? (FIU_UMA_CTS_DEV_PRI_MSK) : (FIU_UMA_CTS_DEV_SHR_MSK)) | \
+					 (len - 1));
 
 			wr_size -= len;
 
@@ -356,9 +350,9 @@ static uint32_t halspi_rw(enum flash_port port, uint8_t *wr_buf, uint16_t wr_siz
 
 			/* write per < 4 byte */
 			FIU0->UMA_CTS = (FIU_UMA_CTS_EXEC_DONE_Msk | \
-							 FIU_UMA_CTS_RD_WR_Msk | a_size | \
-							 ((port == FLASH_PORT_PVT) ? (FIU_UMA_CTS_DEV_PRI_MSK) : (FIU_UMA_CTS_DEV_SHR_MSK)) | \
-							 (wr_size));
+					 FIU_UMA_CTS_RD_WR_Msk | a_size | \
+					 ((port == FLASH_PORT_PVT) ? (FIU_UMA_CTS_DEV_PRI_MSK) : (FIU_UMA_CTS_DEV_SHR_MSK)) | \
+					 (wr_size));
 
 			wr_size = 0;
 
@@ -370,9 +364,9 @@ static uint32_t halspi_rw(enum flash_port port, uint8_t *wr_buf, uint16_t wr_siz
 		if(rd_size > 4) {
 			/* Read per 4 byte */
 			FIU0->UMA_CTS = (FIU_UMA_CTS_EXEC_DONE_Msk | \
-							 FIU_UMA_CTS_C_SIZE_Msk | \
-							 ((port == FLASH_PORT_PVT) ? (FIU_UMA_CTS_DEV_PRI_MSK) : (FIU_UMA_CTS_DEV_SHR_MSK)) | \
-							 4);
+					 FIU_UMA_CTS_C_SIZE_Msk | \
+					 ((port == FLASH_PORT_PVT) ? (FIU_UMA_CTS_DEV_PRI_MSK) : (FIU_UMA_CTS_DEV_SHR_MSK)) | \
+					 4);
 			rd_size -= 4;
 
 			while (FIU0->UMA_CTS & FIU_UMA_CTS_EXEC_DONE_Msk);
@@ -384,17 +378,17 @@ static uint32_t halspi_rw(enum flash_port port, uint8_t *wr_buf, uint16_t wr_siz
 			/* Read per 4 byte */
 			if(cs_auto == 0) {
 				FIU0->UMA_CTS = (FIU_UMA_CTS_EXEC_DONE_Msk | \
-								 FIU_UMA_CTS_C_SIZE_Msk | \
-								 ((port == FLASH_PORT_PVT) ? (FIU_UMA_CTS_DEV_PRI_MSK) : (FIU_UMA_CTS_DEV_SHR_MSK)) | \
-								 (rd_size & 0x07));
+						 FIU_UMA_CTS_C_SIZE_Msk | \
+						 ((port == FLASH_PORT_PVT) ? (FIU_UMA_CTS_DEV_PRI_MSK) : (FIU_UMA_CTS_DEV_SHR_MSK)) | \
+						 (rd_size & 0x07));
 
 			while(FIU0->UMA_CTS & FIU_UMA_CTS_EXEC_DONE_Msk);
 			} else {
 				/* total rd_len < 4 */
 				FIU0->UMA_CTS = (FIU_UMA_CTS_EXEC_DONE_Msk | \
-								 ((port == FLASH_PORT_PVT) ? (FIU_UMA_CTS_DEV_PRI_MSK) : (FIU_UMA_CTS_DEV_SHR_MSK)) | \
-								 a_size | \
-								 (rd_size & 0x07));
+						 ((port == FLASH_PORT_PVT) ? (FIU_UMA_CTS_DEV_PRI_MSK) : (FIU_UMA_CTS_DEV_SHR_MSK)) | \
+						 a_size | \
+						 (rd_size & 0x07));
 
 				while(FIU0->UMA_CTS & FIU_UMA_CTS_EXEC_DONE_Msk);
 			}
@@ -421,7 +415,7 @@ static uint8_t fiu_get_flash_info(enum flash_port port, uint8_t *buf)
 {
 	uint32_t flash_size;
 	uint8_t wr_buf[5] = {0x5A, 0, 0, 0, 0};
-	uint8_t rd_buf[0xF] = {0};
+	uint8_t rd_buf[0x10] = {0};
 
 	/* Read JEDEC ID */
 	FIU_CmdReadWrite(port, FLASH_CMD_READ_JEDEC_ID, 0, 3, 0, rd_buf);
@@ -442,9 +436,9 @@ static uint8_t fiu_get_flash_info(enum flash_port port, uint8_t *buf)
 	wr_buf[3] = rd_buf[0xC];
 	wr_buf[4] = 0x00;
 
-    halspi_rw(port, wr_buf, 5, rd_buf, 8);
+	halspi_rw(port, wr_buf, 5, rd_buf, 8);
 
-	/* Get the Flash memor density */
+	/* Get the Flash memory density */
 	if (rd_buf[7] & 0x80)
 		return 0xFF;
 
@@ -495,26 +489,25 @@ static void fiu_4byte_mode(enum flash_port port, uint8_t enter)
 
 static void PinSelect(enum flash_port port)
 {
-    switch (port)
-    {
-        case FLASH_PORT_PVT:
-			RegSetBit(SCFG->DEVALTC, (BIT3 | BIT2));
-			RegClrBit(SCFG->DEV_CTL3, BIT1);
-			RegSetBit(SCFG->DEVALT0, BIT1);
-			break;
+	switch (port) {
+	case FLASH_PORT_PVT:
+		RegSetBit(SCFG->DEVALTC, (BIT3 | BIT2));
+		RegClrBit(SCFG->DEV_CTL3, BIT1);
+		RegSetBit(SCFG->DEVALT0, BIT1);
+		break;
         case FLASH_PORT_SHD:
-			RegClrBit(SCFG->DEVCNT, BIT6);
-			RegSetBit(SCFG->DEVALTC, (BIT3 | BIT2));
-			RegClrBit(SCFG->DEV_CTL3, BIT1);
-			break;
+		RegClrBit(SCFG->DEVCNT, BIT6);
+		RegSetBit(SCFG->DEVALTC, (BIT3 | BIT2));
+		RegClrBit(SCFG->DEV_CTL3, BIT1);
+		break;
         case FLASH_PORT_BKP:
-			RegSetBit(SCFG->DEVALTC, (BIT3 | BIT2));
-			RegClrBit(SCFG->DEV_CTL3, BIT1);
-			RegSetBit(SCFG->DEVALT0, BIT2);
-			break;
+		RegSetBit(SCFG->DEVALTC, (BIT3 | BIT2));
+		RegClrBit(SCFG->DEV_CTL3, BIT1);
+		RegSetBit(SCFG->DEVALT0, BIT2);
+		break;
         default:
-			break;
-    }
+		break;
+	}
 }
 
 static void FIU_OpenPort(enum flash_port port, uint8_t quad_mode)

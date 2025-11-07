@@ -13,10 +13,16 @@ OBJCOPY        = $(CROSS_COMPILE)objcopy
 OBJDUMP        = $(CROSS_COMPILE)objdump
 OBJSIZE        = $(CROSS_COMPILE)size
 
-TARGET_SPIM    = nct_esio_spim_algo
-TARGET_FIU     = nct_esio_fiu_algo
-OBJS_SPIM      = nct_esio_spim_flash.o
-OBJS_FIU       = nct_esio_fiu_flash.o
+# NCT6692D targets
+TARGET_6692D_FIU     = nct6692d_fiu_algo
+OBJS_6692D_FIU       = nct6692d_fiu_flash.o
+
+# NCT6694D targets (both FIU and SPIM)
+TARGET_6694D_FIU     = nct6694d_fiu_algo
+TARGET_6694D_SPIM    = nct6694d_spim_algo
+OBJS_6694D_FIU       = nct6694d_fiu_flash.o
+OBJS_6694D_SPIM      = nct6694d_spim_flash.o
+
 FLAGS          = -mthumb -Os -ffunction-sections -fdata-sections -g -gdwarf-3 --specs=nano.specs
 FLAGS         += -gstrict-dwarf -Wall -fno-strict-aliasing --asm
 
@@ -26,7 +32,7 @@ PRE_LD_FILE    = nct_esio_flash.lds
 LD_FILE        = nct_esio_flash_generated.lds
 LDFLAGS        = -Wl,-Map,lfw.map -Wl,-T$(LD_FILE) -nostartfiles
 
-all: $(TARGET_SPIM).inc $(TARGET_FIU).inc
+all: $(TARGET_6692D_FIU).inc $(TARGET_6694D_FIU).inc $(TARGET_6694D_SPIM).inc
 
 # Implicit rules
 %.o: %.c
@@ -37,11 +43,18 @@ $(LD_FILE): $(PRE_LD_FILE)
 	-@ echo Generate $@ from $<
 	-@$(CPP) $(PRE_LD_FILE) | grep -v '^#' >>$(LD_FILE)
 
-$(TARGET_SPIM).elf: $(OBJS_SPIM) $(LD_FILE)
+# NCT6692D FIU target
+$(TARGET_6692D_FIU).elf: $(OBJS_6692D_FIU) $(LD_FILE)
 	-@ echo LD  $@ from $<
 	@$(LD) -o $@ $< $(FLAGS) $(LDFLAGS)
 
-$(TARGET_FIU).elf: $(OBJS_FIU) $(LD_FILE)
+# NCT6694D FIU target
+$(TARGET_6694D_FIU).elf: $(OBJS_6694D_FIU) $(LD_FILE)
+	-@ echo LD  $@ from $<
+	@$(LD) -o $@ $< $(FLAGS) $(LDFLAGS)
+
+# NCT6694D SPIM target
+$(TARGET_6694D_SPIM).elf: $(OBJS_6694D_SPIM) $(LD_FILE)
 	-@ echo LD  $@ from $<
 	@$(LD) -o $@ $< $(FLAGS) $(LDFLAGS)
 

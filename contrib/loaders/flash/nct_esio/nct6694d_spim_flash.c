@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include "nct_esio_flash.h"
+#include "nct6694d_flash.h"
 
 /* flashloader parameter structure */
 __attribute__ ((section(".buffers.g_cfg")))
