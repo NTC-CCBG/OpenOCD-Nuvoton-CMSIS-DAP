@@ -122,6 +122,31 @@ static int fiu_dual_io_read(enum flash_port port, uint32_t addr, uint8_t* buff, 
 	return 0;
 }
 
+static int FIU_Verify(enum flash_port port, uint32_t addr, uint8_t *data, uint32_t len, uint8_t FourByteMode)
+{
+	uint8_t read_buf[256] = {0};
+	uint32_t offset = 0;
+	int ret = 0;
+
+	while (len > 0) {
+		uint32_t chunk_size = (len > 256) ? 256 : len;
+
+		ret = fiu_dual_io_read(port, addr + offset, read_buf, chunk_size, FourByteMode);
+		if (ret != 0) {
+			return ret;
+		}
+
+		if (memcmp(data + offset, read_buf, chunk_size) != 0) {
+			return -1; // Verification failed
+		}
+
+		offset += chunk_size;
+		len -= chunk_size;
+	}
+
+	return 0; // Verification successful
+}
+
 static int FIU_PageProgram(enum flash_port port, uint32_t addr, uint8_t *data, uint32_t len, uint8_t FourByteMode)
 {
 	uint16_t dataCnt = 0;
@@ -625,6 +650,10 @@ int main(void)
 		case FLASH_ALGO_CMD_READ:
 			fiu_port_init(port, g_cfg.adr_4b);
 			status = fiu_dual_io_read(port, g_cfg.addr, (uint8_t *)g_buf, g_cfg.len, g_cfg.adr_4b);
+			break;
+		case FLASH_ALGO_CMD_VERIFY:
+			fiu_port_init(port, g_cfg.adr_4b);
+			status = FIU_Verify(port, g_cfg.addr, (uint8_t *)g_buf, g_cfg.len, g_cfg.adr_4b);
 			break;
 		default:
 			status = 0xff;

@@ -41,6 +41,7 @@ enum nct_esio_flash_algo_cmd {
 	NCT_ESIO_FLASH_ALGO_CMD_ERASE,
 	NCT_ESIO_FLASH_ALGO_CMD_PROGRAM,
 	NCT_ESIO_FLASH_ALGO_CMD_READ,
+	NCT_ESIO_FLASH_ALGO_CMD_VERIFY,
 };
 
 struct nct_esio_flash_algo_params {

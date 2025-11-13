@@ -58,7 +58,7 @@ proc program {filename args} {
 	# Check whether programming is needed
 	if {[info exists preverify]} {
 		echo "**pre-verifying**"
-		if {[catch {eval verify_image $flash_args}] == 0} {
+		if {[catch {eval flash verify_image $flash_args}] == 0} {
 			echo "**Verified OK - No flashing**"
 			set needsflash 0
 		}
@@ -73,7 +73,7 @@ proc program {filename args} {
 			if {[info exists verify]} {
 				# verify phase
 				echo "** Verify Started **"
-				if {[catch {eval verify_image $flash_args}] == 0} {
+				if {[catch {eval flash verify_image $flash_args}] == 0} {
 					echo "** Verified OK **"
 				} else {
 					program_error "** Verify Failed **" $exit

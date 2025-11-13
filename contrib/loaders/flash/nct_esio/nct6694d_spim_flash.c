@@ -80,6 +80,51 @@ static void spim_wait_flash_ready(void)
 	} while (dat & 0x01);
 }
 
+static void gdma_memcpy_u8(uint8_t* dst, uint8_t* src, uint32_t cpylen)
+{
+	if (cpylen == 0) return;
+
+	GDMA_SRCB0 = (uint32_t)src;
+	GDMA_DSTB0 = (uint32_t)dst;
+	GDMA_TCNT0 = cpylen;
+	GDMA_CTL0 = 0x10001;
+
+	while (GDMA_CTL0 & 0x1);
+	GDMA_CTL0 = 0;
+}
+
+static uint8_t spim_read(uint32_t addr, uint8_t *buf, uint32_t len)
+{
+	gdma_memcpy_u8(buf, (uint8_t*)(0x80000 + addr), len);
+
+	return 0;
+}
+
+static uint8_t spim_verify(uint32_t addr, uint8_t *buf, uint32_t len)
+{
+	uint8_t tmp_buf[256];
+	uint32_t verify_len;
+
+	while (len) {
+		verify_len = (len > 256) ? 256 : len;
+
+		/* read from flash */
+		spim_read(addr, tmp_buf, verify_len);
+
+		/* compare data */
+		if (memcmp(buf, tmp_buf, verify_len) != 0) {
+			return 1;
+		}
+
+		/* next */
+		addr += verify_len;
+		buf += verify_len;
+		len -= verify_len;
+	}
+
+	return 0;
+}
+
 static uint8_t spim_program(uint32_t addr, uint8_t *buf, uint32_t len)
 {
 	unsigned long spim_ctl_copy = SPIM->CTL0;
@@ -200,6 +245,12 @@ int main(void)
 			break;
 		case FLASH_ALGO_CMD_PROGRAM:
 			status = spim_program(g_cfg.addr, (uint8_t *)g_buf, g_cfg.len);
+			break;
+		case FLASH_ALGO_CMD_READ:
+			status = spim_read(g_cfg.addr, (uint8_t *)g_buf, g_cfg.len);
+			break;
+		case FLASH_ALGO_CMD_VERIFY:
+			status = spim_verify(g_cfg.addr, (uint8_t *)g_buf, g_cfg.len);
 			break;
 		default:
 			status = 0xff;

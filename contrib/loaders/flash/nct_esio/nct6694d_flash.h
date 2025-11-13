@@ -45,6 +45,7 @@ enum flash_algo_command {
 	FLASH_ALGO_CMD_ERASE,
 	FLASH_ALGO_CMD_PROGRAM,
 	FLASH_ALGO_CMD_READ,
+	FLASH_ALGO_CMD_VERIFY,
 };
 
 enum flash_algo_state {

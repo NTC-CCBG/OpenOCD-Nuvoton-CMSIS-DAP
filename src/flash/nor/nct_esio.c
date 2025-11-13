@@ -42,20 +42,20 @@ enum nct_esio_chip_series {
 };
 
 struct nct_esio_flash_info {
-	char *name;
 	enum nct_esio_chip_series esio_chip_series;
+	char *name;
 	uint32_t id;
 	uint32_t size;
 	uint8_t adr_4b;
 };
 
 static const struct nct_esio_flash_info flash_info[] = {
-	{ "NCT6801D", NCT_ESIO_SERIES_NCT6692D, 0xEF4014, 1024 * 1024, 0 },
-	{ "NCT6812D", NCT_ESIO_SERIES_NCT6694D, 0xEF4013, 512 * 1024, 0 },
-	{ "NCT6832D", NCT_ESIO_SERIES_NCT6694D, 0xEF4014, 1024 * 1024, 0 },
-	{ "NCT6692D", NCT_ESIO_SERIES_NCT6692D, 0xEF4013, 512 * 1024, 0 },
-	{ "NCT6694D", NCT_ESIO_SERIES_NCT6694D, 0xEF4015, 2048 * 1024, 0 },
-	{ "NCT9650HB", NCT_ESIO_SERIES_NCT6694D, 0xEF4014, 1024 * 1024, 0 },
+	{ NCT_ESIO_SERIES_NCT6692D, "NCT6801D", 0xEF4014, 1024 * 1024, 0 },
+	{ NCT_ESIO_SERIES_NCT6694D, "NCT6812D", 0xEF4013, 512 * 1024, 0 },
+	{ NCT_ESIO_SERIES_NCT6694D, "NCT6832D", 0xEF4014, 1024 * 1024, 0 },
+	{ NCT_ESIO_SERIES_NCT6692D, "NCT6692D", 0xEF4013, 512 * 1024, 0 },
+	{ NCT_ESIO_SERIES_NCT6694D, "NCT6694B", 0xEF4015, 2048 * 1024, 0 },
+	{ NCT_ESIO_SERIES_NCT6694D, "NCT9650HB", 0xEF4014, 1024 * 1024, 0 },
 };
 
 struct nct_esio_flash_bank {
@@ -450,6 +450,83 @@ static int nct_esio_flash_read(struct flash_bank *bank, uint8_t *buffer,
 	return retval;
 }
 
+static int nct_esio_flash_verify(struct flash_bank *bank, const uint8_t *buffer,
+				 uint32_t offset, uint32_t count)
+{
+	struct nct_esio_flash_bank *nct_esio_bank = bank->driver_priv;
+	struct nct_esio_flash_algo_params algo_params;
+	struct target *target = bank->target;
+	int retval;
+
+	LOG_INFO("%s: Verifying %d bytes to 0x%08x", __func__, count, offset);
+
+	if (target->state != TARGET_HALTED) {
+		LOG_ERROR("Target not halted");
+		return ERROR_TARGET_NOT_HALTED;
+	}
+
+	if (!(nct_esio_bank->probed)) {
+		LOG_ERROR("Flash bank not probed");
+		return ERROR_FLASH_BANK_NOT_PROBED;
+	}
+
+	retval = nct_esio_init(bank);
+	if (retval != ERROR_OK)
+		return retval;
+
+	uint32_t address = offset;
+
+	while (count > 0) {
+		uint32_t size = (count > NCT_ESIO_FLASH_ALGO_BUFFER_SIZE) ?
+			NCT_ESIO_FLASH_ALGO_BUFFER_SIZE : count;
+
+		/* Write data to target memory */
+		retval = target_write_buffer(target, nct_esio_bank->buffer_addr,
+					     size, buffer);
+		if (retval != ERROR_OK) {
+			LOG_ERROR("Unable to write data to target memory");
+			break;
+		}
+
+		/* Initialize algorithm parameters to default values */
+		algo_params.addr = address;
+		algo_params.len = size;
+		algo_params.type = nct_esio_bank->type;
+		algo_params.adr_4b = nct_esio_bank->flash.adr_4b;
+		algo_params.cmd = NCT_ESIO_FLASH_ALGO_CMD_VERIFY;
+		algo_params.state = NCT_ESIO_FLASH_ALGO_STATE_IDLE;
+
+		LOG_INFO("%s: Verifying %d bytes to 0x%08x", __func__, algo_params.len,
+							     algo_params.addr);
+
+		retval = target_write_buffer(target, nct_esio_bank->params_addr,
+					     sizeof(algo_params), (uint8_t *)&algo_params);
+		if (retval != ERROR_OK)
+			break;
+
+		/* Set algorithm parameters */
+		algo_params.state = NCT_ESIO_FLASH_ALGO_STATE_BUSY;
+
+		retval = target_write_buffer(target, nct_esio_bank->params_addr,
+					     sizeof(algo_params), (uint8_t *)&algo_params);
+		if (retval != ERROR_OK)
+			break;
+
+		/* Wait for flash write to complete */
+		retval = nct_esio_wait_algo_done(bank, nct_esio_bank->params_addr);
+		if (retval != ERROR_OK)
+			break;
+
+		count -= size;
+		buffer += size;
+		address += size;
+	}
+
+	(void)nct_esio_quit(bank);
+
+	return retval;
+}
+
 static int nct_esio_flash_probe(struct flash_bank *bank)
 {
 	struct nct_esio_flash_bank *nct_esio_bank = bank->driver_priv;
@@ -648,6 +725,7 @@ const struct flash_driver nct_esio_flash = {
 	.erase = nct_esio_flash_erase,
 	.write = nct_esio_flash_write,
 	.read = nct_esio_flash_read,
+	.verify = nct_esio_flash_verify,
 	.probe = nct_esio_flash_probe,
 	.auto_probe = nct_esio_flash_auto_probe,
 	.erase_check = default_flash_blank_check,
