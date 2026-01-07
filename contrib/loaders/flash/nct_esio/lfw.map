@@ -1,0 +1,172 @@
+Archive member included to satisfy reference by file (symbol)
+
+/usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memset.o)
+                              nct6694d_spim_flash.o (memset)
+/usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memcmp.o)
+                              nct6694d_spim_flash.o (memcmp)
+
+There are no discarded input sections
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+BUFFER           0x200c0000         0x00001014         xrw
+PROGRAM          0x200c1014         0x00001000         xrw
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+LOAD nct6694d_spim_flash.o
+
+.buffers        0x200c0000     0x1014
+                0x200c0000                        _buffers = .
+ *(.buffers.g_cfg)
+ .buffers.g_cfg
+                0x200c0000       0x14 nct6694d_spim_flash.o
+ *(.buffers.g_buf)
+ .buffers.g_buf
+                0x200c0014     0x1000 nct6694d_spim_flash.o
+ *(.buffers*)
+                0x200c1014                        _ebuffers = .
+
+.text           0x200c1014      0x3b8
+                0x200c1014                        _text = .
+ *(.entry*)
+ .entry         0x200c1014       0x10 nct6694d_spim_flash.o
+                0x200c1014                entry
+ *(.text*)
+ .text          0x200c1024        0x0 nct6694d_spim_flash.o
+ .text.SPIM_CmdReadWrite
+                0x200c1024       0xb0 nct6694d_spim_flash.o
+ .text.spim_wait_flash_ready
+                0x200c10d4       0x20 nct6694d_spim_flash.o
+ .text.spim_verify.constprop.0
+                0x200c10f4       0x64 nct6694d_spim_flash.o
+ .text.startup.main
+                0x200c1158      0x178 nct6694d_spim_flash.o
+                0x200c1158                main
+ .text          0x200c12d0       0xb0 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memset.o)
+                0x200c12d0                memset
+ .text          0x200c1380       0x4c /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memcmp.o)
+                0x200c1380                memcmp
+                0x200c13cc                        _etext = .
+
+.glue_7         0x200c13cc        0x0
+ .glue_7        0x200c13cc        0x0 linker stubs
+
+.glue_7t        0x200c13cc        0x0
+ .glue_7t       0x200c13cc        0x0 linker stubs
+
+.vfp11_veneer   0x200c13cc        0x0
+ .vfp11_veneer  0x200c13cc        0x0 linker stubs
+
+.v4_bx          0x200c13cc        0x0
+ .v4_bx         0x200c13cc        0x0 linker stubs
+
+.iplt           0x200c13cc        0x0
+ .iplt          0x200c13cc        0x0 nct6694d_spim_flash.o
+
+.rel.dyn        0x200c13cc        0x0
+ .rel.iplt      0x200c13cc        0x0 nct6694d_spim_flash.o
+
+.data           0x200c13cc        0x0
+                0x200c13cc                        _data = .
+ *(.rodata*)
+ *(.data*)
+ .data          0x200c13cc        0x0 nct6694d_spim_flash.o
+ .data          0x200c13cc        0x0 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memset.o)
+ .data          0x200c13cc        0x0 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memcmp.o)
+                0x200c13cc                        _edata = .
+
+.igot.plt       0x200c13cc        0x0
+ .igot.plt      0x200c13cc        0x0 nct6694d_spim_flash.o
+
+.bss            0x200c13cc        0x0
+                0x200c13cc                        __bss_start__ = .
+                0x200c13cc                        _bss = .
+ *(.bss*)
+ .bss           0x200c13cc        0x0 nct6694d_spim_flash.o
+ .bss           0x200c13cc        0x0 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memset.o)
+ .bss           0x200c13cc        0x0 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memcmp.o)
+ *(COMMON)
+                0x200c13cc                        _ebss = .
+                0x200c13cc                        __bss_end__ = .
+
+.stack          0x200c13cc      0x190
+                0x200c13cc                        _stack = .
+ *(.stack*)
+ .stack         0x200c13cc      0x190 nct6694d_spim_flash.o
+                0x200c155c                        _estack = .
+START GROUP
+LOAD /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/nofp/libgcc.a
+LOAD /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a
+LOAD /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libc_nano.a
+END GROUP
+START GROUP
+LOAD /usr/lib/gcc/arm-none-eabi/13.2.1/thumb/nofp/libgcc.a
+LOAD /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libc_nano.a
+END GROUP
+OUTPUT(nct6694d_spim_algo.elf elf32-littlearm)
+LOAD linker stubs
+
+.debug_info     0x00000000      0xa12
+ .debug_info    0x00000000      0x7b2 nct6694d_spim_flash.o
+ .debug_info    0x000007b2      0x135 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memset.o)
+ .debug_info    0x000008e7      0x12b /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memcmp.o)
+
+.debug_abbrev   0x00000000      0x3f7
+ .debug_abbrev  0x00000000      0x2b0 nct6694d_spim_flash.o
+ .debug_abbrev  0x000002b0       0xb7 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memset.o)
+ .debug_abbrev  0x00000367       0x90 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memcmp.o)
+
+.debug_loc      0x00000000      0x26a
+ .debug_loc     0x00000000      0x26a nct6694d_spim_flash.o
+
+.debug_aranges  0x00000000       0x80
+ .debug_aranges
+                0x00000000       0x40 nct6694d_spim_flash.o
+ .debug_aranges
+                0x00000040       0x20 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memset.o)
+ .debug_aranges
+                0x00000060       0x20 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memcmp.o)
+
+.debug_ranges   0x00000000      0x100
+ .debug_ranges  0x00000000      0x100 nct6694d_spim_flash.o
+
+.debug_line     0x00000000      0x812
+ .debug_line    0x00000000      0x4f4 nct6694d_spim_flash.o
+ .debug_line    0x000004f4      0x1bd /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memset.o)
+ .debug_line    0x000006b1      0x161 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memcmp.o)
+
+.debug_str      0x00000000      0x689
+ .debug_str     0x00000000      0x689 nct6694d_spim_flash.o
+                                0x59a (size before relaxing)
+ .debug_str     0x00000689      0x1ab /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memset.o)
+ .debug_str     0x00000689      0x197 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memcmp.o)
+
+.comment        0x00000000       0x26
+ .comment       0x00000000       0x26 nct6694d_spim_flash.o
+                                 0x27 (size before relaxing)
+ .comment       0x00000026       0x27 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memset.o)
+ .comment       0x00000026       0x27 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memcmp.o)
+
+.ARM.attributes
+                0x00000000       0x30
+ .ARM.attributes
+                0x00000000       0x2e nct6694d_spim_flash.o
+ .ARM.attributes
+                0x0000002e       0x2a /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memset.o)
+ .ARM.attributes
+                0x00000058       0x2a /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memcmp.o)
+
+.debug_frame    0x00000000      0x118
+ .debug_frame   0x00000000       0xbc nct6694d_spim_flash.o
+ .debug_frame   0x000000bc       0x30 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memset.o)
+ .debug_frame   0x000000ec       0x2c /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memcmp.o)
+
+.debug_loclists
+                0x00000000      0x2ee
+ .debug_loclists
+                0x00000000      0x1c6 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memset.o)
+ .debug_loclists
+                0x000001c6      0x128 /usr/lib/gcc/arm-none-eabi/13.2.1/../../../arm-none-eabi/lib/thumb/nofp/libg_nano.a(libc_a-memcmp.o)
